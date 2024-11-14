@@ -72,13 +72,14 @@ func handleNetlinkMessage(buf []byte) []NetlinkMsg {
 			netlinkMsg := NetlinkMsg{MsgType: DelIPAddrMsg, InterfaceName: ifaceName, Addr: ipAddr}
 			netlinkMsgs = append(netlinkMsgs, netlinkMsg)
 		} else if nlHdr.Type == syscall.RTM_NEWLINK {
-			ifaceName := parseLinkMessage(buf[syscall.NLMSG_HDRLEN:])
-			netlinkMsg := NetlinkMsg{MsgType: UpLinkMsg, InterfaceName: ifaceName}
-			netlinkMsgs = append(netlinkMsgs, netlinkMsg)
-		} else if nlHdr.Type == syscall.RTM_DELLINK {
-			ifaceName := parseLinkMessage(buf[syscall.NLMSG_HDRLEN:])
-			netlinkMsg := NetlinkMsg{MsgType: DownLinkMsg, InterfaceName: ifaceName}
-			netlinkMsgs = append(netlinkMsgs, netlinkMsg)
+			ifaceName, isUp := parseLinkMessage(buf[syscall.NLMSG_HDRLEN:])
+			if isUp {
+				netlinkMsg := NetlinkMsg{MsgType: UpLinkMsg, InterfaceName: ifaceName}
+				netlinkMsgs = append(netlinkMsgs, netlinkMsg)
+			} else {
+				netlinkMsg := NetlinkMsg{MsgType: DownLinkMsg, InterfaceName: ifaceName}
+				netlinkMsgs = append(netlinkMsgs, netlinkMsg)
+			}
 		}
 
 		// next message
@@ -137,12 +138,16 @@ func parseAddrMessage(buf []byte) (string, netip.Addr) {
 	return ifaceName, ipAddr
 }
 
-func parseLinkMessage(buf []byte) string {
+func parseLinkMessage(buf []byte) (string, bool) {
 	var ifaceName string
+	var isUp bool
 
 	// read ifaddrmsg
 	ifinfoMsg := syscall.IfInfomsg{}
 	binary.Read(bytes.NewReader(buf), binary.LittleEndian, &ifinfoMsg)
+
+	// read IFF_UP
+	isUp = ifinfoMsg.Flags&syscall.IFF_UP != 0
 
 	// read rtaddrs
 	attrBuf := buf[syscall.SizeofIfInfomsg:]
@@ -164,7 +169,7 @@ func parseLinkMessage(buf []byte) string {
 		attrBuf = attrBuf[rta.Len:]
 	}
 
-	return ifaceName
+	return ifaceName, isUp
 }
 
 // RoutineNetlinkMessageReceive receive netlink message
