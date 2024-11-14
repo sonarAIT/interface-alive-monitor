@@ -11,6 +11,10 @@ func main() {
 	defer close(nlmsgCh)
 	go internal.RoutineNetlinkMessageReceive(nlmsgCh)
 
+	var ifaceManager internal.InterfaceManager
+	internal.RegistInterfaces(&ifaceManager)
+	fmt.Println(ifaceManager)
+
 	for {
 		select {
 		case nlmsg := <-nlmsgCh:
