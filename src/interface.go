@@ -21,14 +21,17 @@ type InterfaceManager struct {
 
 // NewIPAddr add IP Address to IP Address list in Interface
 func (ifacem *InterfaceManager) NewIPAddr(ifaceName string, addr netip.Addr) {
+	// lock
 	ifacem.Lock()
 	defer ifacem.Unlock()
 
+	// search iface
 	for i, iface := range ifacem.Interfaces {
 		if iface.Name != ifaceName {
 			continue
 		}
 
+		// add addr
 		if addr.Is4() {
 			ifacem.Interfaces[i].IPv4Addr = append(iface.IPv4Addr, addr)
 		} else if addr.Is6() {
@@ -38,6 +41,7 @@ func (ifacem *InterfaceManager) NewIPAddr(ifaceName string, addr netip.Addr) {
 		return
 	}
 
+	// if iface is not found. add iface with addr.
 	newIface := Interface{Name: ifaceName}
 	if addr.Is4() {
 		newIface.IPv4Addr = []netip.Addr{addr}
@@ -49,14 +53,17 @@ func (ifacem *InterfaceManager) NewIPAddr(ifaceName string, addr netip.Addr) {
 
 // NewIPAddr delete IP Address from IP Address list in Interface
 func (ifacem *InterfaceManager) DelIPAddr(ifaceName string, addr netip.Addr) {
+	// lock
 	ifacem.Lock()
 	defer ifacem.Unlock()
 
+	// search iface
 	for i, iface := range ifacem.Interfaces {
 		if iface.Name != ifaceName {
 			continue
 		}
 
+		// remove addr
 		if addr.Is4() {
 			removeAddr(&ifacem.Interfaces[i].IPv4Addr, addr)
 		} else if addr.Is6() {
@@ -68,31 +75,38 @@ func (ifacem *InterfaceManager) DelIPAddr(ifaceName string, addr netip.Addr) {
 
 // NewLink add network interface to interface manager
 func (ifacem *InterfaceManager) NewLink(ifaceName string, state bool) {
+	// lock
 	ifacem.Lock()
 	defer ifacem.Unlock()
 
+	// add iface
 	newIface := Interface{Name: ifaceName, State: state}
 	ifacem.Interfaces = append(ifacem.Interfaces, newIface)
 }
 
 // NewLink delete network interface from interface manager
 func (ifacem *InterfaceManager) DelLink(ifaceName string) {
+	// lock
 	ifacem.Lock()
 	defer ifacem.Unlock()
 
+	// remove iface
 	removeIface(&ifacem.Interfaces, ifaceName)
 }
 
 // UpLink sets the state of the interface in the interface manager to up
 func (ifacem *InterfaceManager) UpLink(ifaceName string) {
+	// lock
 	ifacem.Lock()
 	defer ifacem.Unlock()
 
+	// search iface
 	for i, iface := range ifacem.Interfaces {
 		if iface.Name != ifaceName {
 			continue
 		}
 
+		// set state
 		ifacem.Interfaces[i].State = true
 		return
 	}
@@ -100,14 +114,17 @@ func (ifacem *InterfaceManager) UpLink(ifaceName string) {
 
 // DownLink sets the state of the interface in the interface manager to down
 func (ifacem *InterfaceManager) DownLink(ifaceName string) {
+	// lock
 	ifacem.Lock()
 	defer ifacem.Unlock()
 
+	// search iface
 	for i, iface := range ifacem.Interfaces {
 		if iface.Name != ifaceName {
 			continue
 		}
 
+		// set state
 		ifacem.Interfaces[i].State = false
 		return
 	}
