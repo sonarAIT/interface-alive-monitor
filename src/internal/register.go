@@ -19,13 +19,13 @@ func RegistInterfaces(ifaceManager *InterfaceManager) error {
 
 		addrs, _ := iface.Addrs()
 		for _, addr := range addrs {
-			ip, ok := netip.AddrFromSlice(addr.(*net.IPNet).IP)
-			if !ok {
-				fmt.Println("Failed to AddrFromSlice")
+			prefix, err := netip.ParsePrefix(addr.String())
+			if err != nil {
+				fmt.Println("Failed to ParsePrefix")
 				continue
 			}
 
-			(*ifaceManager).NewIPAddr(iface.Name, ip)
+			(*ifaceManager).NewIPAddr(iface.Name, prefix.Addr())
 		}
 	}
 
