@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/interface-alive-monitor/internal"
 )
 
@@ -11,11 +13,14 @@ func main() {
 
 	var ifaceManager internal.InterfaceManager
 	internal.RegistInterfaces(&ifaceManager)
+	ifaceManager.Print()
 
 	for {
 		select {
 		case nlmsgs := <-nlmsgCh:
+			fmt.Println("-----")
 			for _, nlmsg := range nlmsgs {
+				fmt.Println("nlmsg: ", nlmsg)
 				switch nlmsg.MsgType {
 				case internal.NewIPAddrMsg:
 					if nlmsg.Addr.String() == "invalid IP" {
