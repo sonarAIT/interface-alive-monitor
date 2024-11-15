@@ -32,7 +32,7 @@ func main() {
 				case internal.DownLinkMsg:
 					ifaceManager.DownLink(nlmsg.InterfaceName)
 				}
-				// ifaceManager.Print()
+				ifaceManager.Print()
 			}
 		}
 	}

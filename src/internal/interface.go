@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"net/netip"
 	"sync"
 )
@@ -127,6 +128,29 @@ func (ifacem *InterfaceManager) DownLink(ifaceName string) {
 		// set state
 		ifacem.Interfaces[i].State = false
 		return
+	}
+}
+
+func (ifacem *InterfaceManager) Print() {
+	fmt.Println("-----")
+	for _, iface := range ifacem.Interfaces {
+		fmt.Println("{")
+		fmt.Println("\tInterfaceName: ", iface.Name)
+
+		fmt.Print("\tIPv4: [")
+		for _, addr := range iface.IPv4Addr {
+			fmt.Print(addr.String(), ",")
+		}
+		fmt.Println("]")
+
+		fmt.Print("\tIPv6: [")
+		for _, addr := range iface.IPv6Addr {
+			fmt.Print(addr.String(), ",")
+		}
+		fmt.Println("]")
+
+		fmt.Println("\tState: ", iface.State)
+		fmt.Println("},")
 	}
 }
 
