@@ -108,7 +108,7 @@ func parseAddrMessage(buf []byte) (string, netip.Addr) {
 		}
 
 		// if exist IFLA_IFNAME attr. get IP address.
-		if rta.Type == syscall.IFLA_IFNAME {
+		if rta.Type == syscall.IFA_LABEL {
 			ifaceNameBinary := attrBuf[syscall.SizeofRtAttr : rta.Len-1]
 			ifaceName = string(ifaceNameBinary)
 		}
@@ -132,7 +132,8 @@ func parseAddrMessage(buf []byte) (string, netip.Addr) {
 		}
 
 		// next attr
-		attrBuf = attrBuf[rta.Len:]
+		padding := (4 - (rta.Len % 4)) % 4
+		attrBuf = attrBuf[rta.Len+padding:]
 	}
 
 	return ifaceName, ipAddr
@@ -166,7 +167,8 @@ func parseLinkMessage(buf []byte) (string, bool) {
 		}
 
 		// next attr
-		attrBuf = attrBuf[rta.Len:]
+		padding := (4 - (rta.Len % 4)) % 4
+		attrBuf = attrBuf[rta.Len+padding:]
 	}
 
 	return ifaceName, isUp
